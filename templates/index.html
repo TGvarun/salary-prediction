@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SalaryIQ — IT Salary Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:#0a0f1e; --surface:#111827; --card:#161f35; --border:#1e2d4a;
+      --accent:#3b82f6; --accent2:#8b5cf6; --success:#10b981;
+      --text:#e2e8f0; --muted:#64748b; --glow:0 0 40px rgba(59,130,246,.25);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+    .hero{background:linear-gradient(135deg,#0a0f1e 0%,#0d1b3e 50%,#0a1628 100%);border-bottom:1px solid var(--border);padding:3rem 0 2rem;position:relative;overflow:hidden}
+    .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(59,130,246,.15),transparent);pointer-events:none}
+    .hero-badge{display:inline-block;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.35);color:var(--accent);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .85rem;border-radius:999px;margin-bottom:1rem}
+    .hero h1{font-size:clamp(2rem,5vw,3.25rem);font-weight:700;line-height:1.1;background:linear-gradient(135deg,#e2e8f0 0%,#93c5fd 50%,#c4b5fd 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero p{color:var(--muted);font-size:1.05rem;max-width:520px}
+    .stats-strip{display:flex;gap:2rem;flex-wrap:wrap;margin-top:1.75rem}
+    .stat-item{display:flex;align-items:baseline;gap:.4rem}
+    .stat-value{font-size:1.4rem;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace}
+    .stat-label{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+    .main-grid{display:grid;grid-template-columns:1fr 380px;gap:2rem;max-width:1180px;margin:2.5rem auto;padding:0 1.5rem}
+    @media(max-width:900px){.main-grid{grid-template-columns:1fr}}
+
+    .card-dark{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1.75rem}
+    .card-title{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+    @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:.35rem}
+    .field label{font-size:.75rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+    .field input,.field select{background:var(--surface);border:1px solid var(--border);border-radius:.5rem;color:var(--text);font-family:inherit;font-size:.95rem;padding:.6rem .85rem;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none}
+    .field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+    .field select option{background:var(--surface)}
+
+    .range-wrap{position:relative;padding-top:1.4rem}
+    .range-val{position:absolute;right:0;top:0;font-size:.8rem;color:var(--accent);font-family:'DM Mono',monospace;font-weight:500}
+    input[type=range]{width:100%;height:6px;background:var(--border);border:none!important;border-radius:999px;padding:0!important;cursor:pointer;accent-color:var(--accent)}
+
+    .section-divider{font-size:.65rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);grid-column:1/-1;display:flex;align-items:center;gap:.75rem;padding-top:.25rem}
+    .section-divider::after{content:"";flex:1;height:1px;background:var(--border)}
+
+    .btn-predict{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border:none;border-radius:.65rem;color:#fff;font-family:inherit;font-size:1rem;font-weight:600;padding:.85rem 1.5rem;cursor:pointer;margin-top:1.5rem;transition:opacity .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 20px rgba(59,130,246,.35)}
+    .btn-predict:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 6px 28px rgba(59,130,246,.45)}
+    .btn-predict:active{transform:translateY(0)}
+    .btn-predict:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+    .result-panel{position:sticky;top:1.5rem}
+    .result-card{text-align:center;padding:2rem 1.75rem;border-radius:1rem;background:linear-gradient(145deg,#0f1d38,#111827);border:1px solid var(--border);transition:box-shadow .4s}
+    .result-card.has-result{box-shadow:var(--glow);border-color:rgba(59,130,246,.4)}
+    .result-placeholder{color:var(--muted);font-size:.95rem;padding:2rem 0}
+    .result-placeholder .icon{font-size:3rem;margin-bottom:.75rem}
+    .salary-display{display:none}
+    .salary-display.show{display:block}
+    .salary-label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+    .salary-amount{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:700;font-family:'DM Mono',monospace;background:linear-gradient(135deg,#34d399,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1}
+    .salary-sub{font-size:.8rem;color:var(--muted);margin-top:.35rem}
+    .result-badges{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:1.25rem}
+    .rbadge{font-size:.72rem;font-weight:500;padding:.3rem .7rem;border-radius:999px;border:1px solid}
+    .rbadge-blue{color:var(--accent);border-color:rgba(59,130,246,.4);background:rgba(59,130,246,.08)}
+    .rbadge-green{color:var(--success);border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.08)}
+    .rbadge-purple{color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08)}
+    .confidence-bar-wrap{margin-top:1.25rem;text-align:left}
+    .confidence-label{font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:.4rem}
+    .confidence-bar{height:6px;border-radius:999px;background:var(--border);overflow:hidden}
+    .confidence-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--success));width:0;transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+    .info-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)}
+    .info-row:last-child{border-bottom:none}
+    .info-key{font-size:.8rem;color:var(--muted)}
+    .info-val{font-size:.85rem;font-weight:600;font-family:'DM Mono',monospace;color:var(--accent)}
+
+    .alert-error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:.65rem;color:#f87171;padding:.75rem 1rem;font-size:.875rem;margin-top:1rem;display:none}
+    .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .history-entry{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.82rem}
+    .history-entry:last-child{border-bottom:none}
+    .history-salary{font-family:'DM Mono',monospace;color:var(--success);font-weight:600}
+    .history-meta{color:var(--muted);font-size:.75rem}
+    #historyEmpty{color:var(--muted);font-size:.85rem;text-align:center;padding:1rem 0}
+
+    footer{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem}
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">IT Sector · India · ML-Powered</div>
+    <h1>Salary Intelligence<br/>for Tech Professionals</h1>
+    <p class="mt-2">Predict annual compensation using a high-accuracy Linear Regression model trained on real IT industry data.</p>
+    <div class="stats-strip">
+      <div class="stat-item"><span class="stat-value">{{ metadata.metrics.best_model.r2 }}</span><span class="stat-label">R² Score</span></div>
+      <div class="stat-item"><span class="stat-value">9,511</span><span class="stat-label">Records trained</span></div>
+      <div class="stat-item"><span class="stat-value">{{ metadata.cross_validation.folds }}-Fold</span><span class="stat-label">CV validated</span></div>
+      <div class="stat-item"><span class="stat-value">₹{{ "{:,.0f}".format(metadata.metrics.best_model.mae) }}</span><span class="stat-label">Mean Abs Error</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="main-grid">
+  <!-- LEFT: FORM -->
+  <div>
+    <div class="card-dark">
+      <div class="card-title">Input Features</div>
+      <form id="predForm" novalidate>
+        <div class="form-grid">
+
+          <div class="section-divider">Professional Profile</div>
+
+          <div class="field">
+            <label>Job Title</label>
+            <select name="job_title" required>
+              <option value="" disabled selected>Select title…</option>
+              {% for t in metadata.feature_options.job_title %}
+              <option value="{{ t }}">{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Education Level</label>
+            <select name="education" required>
+              <option value="" disabled selected>Select level…</option>
+              {% for e in metadata.feature_options.education %}
+              <option value="{{ e }}">{{ e }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Gender</label>
+            <select name="gender" required>
+              <option value="" disabled selected>Select…</option>
+              {% for g in metadata.feature_options.gender %}
+              <option value="{{ g }}">{{ g }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Company Size</label>
+            <select name="company_size" required>
+              <option value="" disabled selected>Select size…</option>
+              {% for c in metadata.feature_options.company_size %}
+              <option value="{{ c }}">{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Location</label>
+            <select name="location" required>
+              <option value="" disabled selected>Select city…</option>
+              {% for l in metadata.feature_options.location %}
+              <option value="{{ l }}">{{ l }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Remote Work</label>
+            <select name="remote_work" required>
+              <option value="" disabled selected>Select…</option>
+              {% for r in metadata.feature_options.remote_work %}
+              <option value="{{ r }}">{{ r }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="section-divider">Numerical Attributes</div>
+
+          <div class="field">
+            <label>Age</label>
+            <div class="range-wrap">
+              <span class="range-val" id="ageVal">30</span>
+              <input type="range" name="age" id="ageRange"
+                     min="{{ metadata.numerical_ranges.age.min }}"
+                     max="{{ metadata.numerical_ranges.age.max }}"
+                     value="30" oninput="syncRange('age',this.value)"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Experience (years)</label>
+            <div class="range-wrap">
+              <span class="range-val" id="experience_yearsVal">5</span>
+              <input type="range" name="experience_years" id="experience_yearsRange"
+                     min="{{ metadata.numerical_ranges.experience_years.min }}"
+                     max="{{ metadata.numerical_ranges.experience_years.max }}"
+                     value="5" oninput="syncRange('experience_years',this.value)"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Skills Score ({{ metadata.numerical_ranges.skills_score.min }}–{{ metadata.numerical_ranges.skills_score.max }})</label>
+            <div class="range-wrap">
+              <span class="range-val" id="skills_scoreVal">70</span>
+              <input type="range" name="skills_score" id="skills_scoreRange"
+                     min="{{ metadata.numerical_ranges.skills_score.min }}"
+                     max="{{ metadata.numerical_ranges.skills_score.max }}"
+                     value="70" oninput="syncRange('skills_score',this.value)"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Certifications</label>
+            <div class="range-wrap">
+              <span class="range-val" id="certificationsVal">2</span>
+              <input type="range" name="certifications" id="certificationsRange"
+                     min="{{ metadata.numerical_ranges.certifications.min }}"
+                     max="{{ metadata.numerical_ranges.certifications.max }}"
+                     value="2" oninput="syncRange('certifications',this.value)"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Performance Rating (1–5)</label>
+            <div class="range-wrap">
+              <span class="range-val" id="performance_ratingVal">3</span>
+              <input type="range" name="performance_rating" id="performance_ratingRange"
+                     min="{{ metadata.numerical_ranges.performance_rating.min }}"
+                     max="{{ metadata.numerical_ranges.performance_rating.max }}"
+                     value="3" oninput="syncRange('performance_rating',this.value)"/>
+            </div>
+          </div>
+
+        </div><!-- /form-grid -->
+        <div id="errorMsg" class="alert-error"></div>
+        <button type="submit" class="btn-predict" id="submitBtn">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText">⚡ Predict Salary</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- RIGHT: RESULTS -->
+  <div class="result-panel">
+    <div class="card-dark result-card" id="resultCard">
+      <div class="result-placeholder" id="placeholder">
+        <div class="icon">🎯</div>
+        <div>Fill the form and hit<br/><strong>Predict Salary</strong></div>
+      </div>
+      <div class="salary-display" id="salaryDisplay">
+        <div class="salary-label">Estimated Annual Salary</div>
+        <div class="salary-amount" id="salaryAmount"></div>
+        <div class="salary-sub" id="salaryRange"></div>
+        <div class="result-badges" id="resultBadges"></div>
+        <div class="confidence-bar-wrap">
+          <div class="confidence-label">
+            <span>Model Confidence (R²)</span>
+            <span id="confPct"></span>
+          </div>
+          <div class="confidence-bar"><div class="confidence-fill" id="confFill"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-dark mt-3">
+      <div class="card-title">Model Performance</div>
+      <div class="info-row"><span class="info-key">Algorithm</span><span class="info-val">{{ metadata.best_model_name }}</span></div>
+      <div class="info-row"><span class="info-key">R² Score</span><span class="info-val">{{ metadata.metrics.best_model.r2 }}</span></div>
+      <div class="info-row"><span class="info-key">CV Mean R²</span><span class="info-val">{{ metadata.cross_validation.mean_r2 }} ± {{ metadata.cross_validation.std_r2 }}</span></div>
+      <div class="info-row"><span class="info-key">MAE</span><span class="info-val">₹{{ "{:,.0f}".format(metadata.metrics.best_model.mae) }}</span></div>
+      <div class="info-row"><span class="info-key">RMSE</span><span class="info-val">₹{{ "{:,.0f}".format(metadata.metrics.best_model.rmse) }}</span></div>
+      <div class="info-row"><span class="info-key">Train / Test</span><span class="info-val">{{ metadata.train_size }} / {{ metadata.test_size }}</span></div>
+      <div class="info-row"><span class="info-key">LR R²</span><span class="info-val">{{ metadata.metrics.linear_regression.r2 }}</span></div>
+      <div class="info-row"><span class="info-key">Poly d=2 R²</span><span class="info-val">{{ metadata.metrics.polynomial_d2.r2 }}</span></div>
+    </div>
+
+    <div class="card-dark mt-3">
+      <div class="card-title">Prediction History</div>
+      <div id="historyList">
+        <div id="historyEmpty">No predictions yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>SalaryIQ · IT Sector India · Linear Regression · R²=0.9737 · Built with Flask + Bootstrap</footer>
+
+<script>
+const predHistory = [];
+function syncRange(key, val) {
+  document.getElementById(key + 'Val').textContent = val;
+}
+function fmtINR(n) {
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+document.getElementById('predForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn     = document.getElementById('submitBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+  const errDiv  = document.getElementById('errorMsg');
+
+  const fd = new FormData(this);
+  const payload = {};
+  const numFields = ['age','experience_years','skills_score','certifications','performance_rating'];
+  for (const [k,v] of fd.entries()) {
+    payload[k] = numFields.includes(k) ? Number(v) : v;
+  }
+
+  // Basic client-side validation
+  const catFields = ['gender','education','job_title','company_size','location','remote_work'];
+  for (const f of catFields) {
+    if (!payload[f]) {
+      errDiv.style.display='block';
+      errDiv.textContent='⚠ Please select a value for: ' + f.replace('_',' ');
+      return;
+    }
+  }
+
+  btn.disabled=true; spinner.style.display='block'; btnText.textContent='Predicting…'; errDiv.style.display='none';
+
+  try {
+    const res  = await fetch('/predict', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+
+    const salary = data.predicted_salary;
+    const lower  = Math.round(salary * 0.95);
+    const upper  = Math.round(salary * 1.05);
+
+    document.getElementById('placeholder').style.display = 'none';
+    const disp = document.getElementById('salaryDisplay');
+    disp.classList.add('show');
+    document.getElementById('resultCard').classList.add('has-result');
+    document.getElementById('salaryAmount').textContent = fmtINR(salary);
+    document.getElementById('salaryRange').textContent  = 'Likely range: ' + fmtINR(lower) + ' – ' + fmtINR(upper);
+
+    document.getElementById('resultBadges').innerHTML = [
+      '<span class="rbadge rbadge-blue">' + payload.job_title + '</span>',
+      '<span class="rbadge rbadge-purple">' + payload.location + '</span>',
+      '<span class="rbadge rbadge-green">' + payload.experience_years + ' yrs exp</span>',
+      '<span class="rbadge rbadge-blue">' + payload.company_size + '</span>',
+    ].join('');
+
+    const conf = 97;
+    document.getElementById('confPct').textContent = conf + '%';
+    setTimeout(() => { document.getElementById('confFill').style.width = conf + '%'; }, 80);
+
+    predHistory.unshift({ salary, job: payload.job_title, loc: payload.location, exp: payload.experience_years });
+    renderHistory();
+
+  } catch(err) {
+    errDiv.style.display='block';
+    errDiv.textContent='⚠ ' + err.message;
+  } finally {
+    btn.disabled=false; spinner.style.display='none'; btnText.textContent='⚡ Predict Salary';
+  }
+});
+
+function renderHistory() {
+  const container = document.getElementById('historyList');
+  if (!predHistory.length) return;
+  document.getElementById('historyEmpty').style.display='none';
+  container.innerHTML = predHistory.slice(0,5).map((h,i) =>
+    '<div class="history-entry">' +
+      '<div><div class="history-salary">' + fmtINR(h.salary) + '</div>' +
+      '<div class="history-meta">' + h.job + ' · ' + h.loc + ' · ' + h.exp + 'y</div></div>' +
+      '<div style="color:var(--muted);font-size:.72rem">#' + (i+1) + '</div>' +
+    '</div>'
+  ).join('') + '<div id="historyEmpty" style="display:none"></div>';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+{
+  "best_model_name": "Linear Regression",
+  "numerical_cols": [
+    "age",
+    "experience_years",
+    "skills_score",
+    "certifications",
+    "performance_rating"
+  ],
+  "categorical_cols": [
+    "gender",
+    "education",
+    "job_title",
+    "company_size",
+    "location",
+    "remote_work"
+  ],
+  "metrics": {
+    "linear_regression": {
+      "r2": 0.9737,
+      "mae": 64852.21,
+      "rmse": 81277.69
+    },
+    "polynomial_d2": {
+      "r2": 0.9736,
+      "mae": 64994.45,
+      "rmse": 81387.55
+    },
+    "best_model": {
+      "r2": 0.9737,
+      "mae": 64852.21,
+      "rmse": 81277.69
+    }
+  },
+  "cross_validation": {
+    "folds": 5,
+    "scores": [
+      0.9734,
+      0.9742,
+      0.9752,
+      0.9744,
+      0.9752
+    ],
+    "mean_r2": 0.9745,
+    "std_r2": 0.0007
+  },
+  "train_size": 7608,
+  "test_size": 1903,
+  "feature_options": {
+    "gender": [
+      "Female",
+      "Male",
+      "Other"
+    ],
+    "education": [
+      "Bachelor",
+      "High School",
+      "Master",
+      "PhD"
+    ],
+    "job_title": [
+      "Data Scientist",
+      "DevOps Engineer",
+      "Software Engineer"
+    ],
+    "company_size": [
+      "Large",
+      "MNC",
+      "Medium",
+      "Small",
+      "Startup"
+    ],
+    "location": [
+      "Bangalore",
+      "Chennai",
+      "Delhi",
+      "Hyderabad",
+      "Kolkata",
+      "Mumbai",
+      "Pune",
+      "Remote"
+    ],
+    "remote_work": [
+      "No",
+      "Yes"
+    ]
+  },
+  "numerical_ranges": {
+    "age": {
+      "min": 22,
+      "max": 59
+    },
+    "experience_years": {
+      "min": 0,
+      "max": 34
+    },
+    "skills_score": {
+      "min": 10,
+      "max": 100
+    },
+    "certifications": {
+      "min": 0,
+      "max": 7
+    },
+    "performance_rating": {
+      "min": 1,
+      "max": 5
+    }
+  },
+  "vif_results": {
+    "age": 1.502,
+    "experience_years": 1.501,
+    "skills_score": 1.0,
+    "certifications": 1.0,
+    "performance_rating": 1.0
+  },
+  "high_vif_dropped": []
+}
